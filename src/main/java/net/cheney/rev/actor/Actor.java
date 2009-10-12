@@ -13,12 +13,13 @@ public abstract class Actor<RECEIVER> implements Runnable {
 	
 	private final Queue<Message<RECEIVER>> mailbox = new LinkedBlockingDeque<Message<RECEIVER>>();
 
-	public void send(@Nonnull Message<RECEIVER> message) {
+	public final void send(@Nonnull Message<RECEIVER> message) {
 		mailbox.offer(message);
 		schedule();
 	}
 	
-	protected Message<RECEIVER> pollMailbox() {
+	@Nonnull
+	protected final Message<RECEIVER> pollMailbox() {
 		return mailbox.poll();
 	}
 

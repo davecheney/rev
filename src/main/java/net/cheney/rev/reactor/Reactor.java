@@ -44,8 +44,7 @@ public final class Reactor extends Actor<Reactor> {
 			msg.channel().register(this.selector, 0, msg.sender());
 			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncSocketChannel>(this));
 		} catch (ClosedChannelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			msg.sender().send(new ChannelClosedMessage<AsyncSocketChannel>(this));
 		}
 	}
 
@@ -64,8 +63,7 @@ public final class Reactor extends Actor<Reactor> {
 			msg.channel().register(this.selector, 0, msg.sender());
 			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncServerChannel>(this));
 		} catch (ClosedChannelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			msg.sender().send(new ChannelClosedMessage<AsyncServerChannel>(this));
 		}
 	}
 

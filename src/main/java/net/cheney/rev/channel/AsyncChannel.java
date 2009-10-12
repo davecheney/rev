@@ -8,6 +8,7 @@ import java.nio.channels.SelectionKey;
 import javax.annotation.Nonnull;
 
 import net.cheney.rev.actor.Actor;
+import net.cheney.rev.reactor.ChannelClosedMessage;
 import net.cheney.rev.reactor.ChannelRegistrationCompleteMessage;
 
 public abstract class AsyncChannel<T extends AsyncChannel<T>> extends Actor<T> implements Closeable {
@@ -15,12 +16,20 @@ public abstract class AsyncChannel<T extends AsyncChannel<T>> extends Actor<T> i
 	protected abstract SelectableChannel channel();
 	
 	@Override
-	public void close() throws IOException {
-		this.channel().close();
+	public final void close() {
+		try {
+			this.channel().close();
+		} catch (IOException e) {
+			// ignore
+		}
 	}
 	
-	public void receive(@Nonnull ChannelRegistrationCompleteMessage<T> msg) {
+	public final void receive(@Nonnull ChannelRegistrationCompleteMessage<T> msg) {
 		msg.sender().send(new EnableInterestMessage(this, channel(), SelectionKey.OP_ACCEPT));
+	}
+	
+	public final void receive(@Nonnull ChannelClosedMessage msg) {
+		close();
 	}
 
 }
