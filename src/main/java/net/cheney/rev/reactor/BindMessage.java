@@ -6,7 +6,7 @@ import java.net.SocketAddress;
 import net.cheney.rev.actor.Message;
 import net.cheney.rev.channel.AsyncServerChannel;
 
-public class BindMessage extends Message<AsyncServerChannel> {
+public final class BindMessage extends Message<AsyncServerChannel> {
 
 	private final InetSocketAddress addr;
 	private Reactor sender;

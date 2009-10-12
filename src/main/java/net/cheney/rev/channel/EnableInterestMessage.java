@@ -4,7 +4,7 @@ import java.nio.channels.SelectableChannel;
 
 import net.cheney.rev.reactor.Reactor;
 
-public class EnableInterestMessage extends UpdateInterestMessage {
+public final class EnableInterestMessage extends UpdateInterestMessage {
 
 	public EnableInterestMessage(AsyncChannel<?> sender, SelectableChannel channel, int ops) {
 		super(sender, channel, ops);

@@ -4,7 +4,7 @@ import java.nio.channels.ServerSocketChannel;
 
 import net.cheney.rev.reactor.Reactor;
 
-public class RegisterAsyncServerChannelMessage extends RegisterChannelMessage<AsyncServerChannel> {
+public final class RegisterAsyncServerChannelMessage extends RegisterChannelMessage<AsyncServerChannel> {
 
 	private final ServerSocketChannel channel;
 
