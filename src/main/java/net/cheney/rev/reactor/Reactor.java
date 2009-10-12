@@ -19,7 +19,7 @@ import net.cheney.rev.channel.RegisterAsyncServerChannelMessage;
 import net.cheney.rev.channel.RegisterAsyncSocketChannelMessage;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 
-public class Reactor extends Actor<Reactor> {
+public final class Reactor extends Actor<Reactor> {
 
 	private Selector selector;
 

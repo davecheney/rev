@@ -17,16 +17,16 @@ public abstract class UpdateInterestMessage extends Message<Reactor> {
 		this.ops = ops;
 	}
 	
-	public SelectableChannel channel() {
+	public final SelectableChannel channel() {
 		return channel;
 	}
 	
-	public int ops() {
+	public final int ops() {
 		return ops;
 	}
 	
 	@Override
-	public AsyncChannel<?> sender() {
+	public final AsyncChannel<?> sender() {
 		return sender;
 	}
 }

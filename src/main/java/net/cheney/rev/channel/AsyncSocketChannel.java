@@ -6,7 +6,7 @@ import java.nio.channels.spi.SelectorProvider;
 
 import net.cheney.rev.actor.Message;
 
-public class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChannel> {
+public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChannel> {
 
 	private final SocketChannel channel;
 

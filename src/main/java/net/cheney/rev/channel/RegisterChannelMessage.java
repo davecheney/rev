@@ -16,7 +16,7 @@ public abstract class RegisterChannelMessage<T extends AsyncChannel<T>> extends 
 	public abstract SelectableChannel channel();
 	
 	@Override
-	public T sender() {
+	public final T sender() {
 		return sender;
 	}
 

@@ -11,7 +11,7 @@ import net.cheney.rev.actor.Message;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.BindMessage;
 
-public class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
+public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 
 	private final ServerProtocolFactory factory;
 	private final ServerSocketChannel channel;
