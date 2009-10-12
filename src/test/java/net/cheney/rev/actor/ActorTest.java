@@ -4,8 +4,14 @@ import org.junit.Test;
 
 public class ActorTest {
 
-	@Test
-	public void testActor() {
+	public class Foo extends Actor<Object> {
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
+	
 }
