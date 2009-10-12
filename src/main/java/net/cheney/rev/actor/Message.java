@@ -1,10 +1,10 @@
 package net.cheney.rev.actor;
 
-import java.io.IOException;
+import javax.annotation.Nonnull;
 
 public abstract class Message<RECEIVER> {
 
 	public abstract Object sender();
 
-	public abstract void accept(RECEIVER visitor) throws IOException;
+	public abstract void accept(@Nonnull RECEIVER visitor);
 }
