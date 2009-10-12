@@ -27,4 +27,30 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<properties>
+		<repoUrl>http://repo.cheney.net/maven2</repoUrl>
+		<releaseRepoUrl>${repoUrl}/public</releaseRepoUrl>
+		<snapshotRepoUrl>${repoUrl}/public-snapshot</snapshotRepoUrl>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>public</id>
+			<url>dav:${releaseRepoUrl}</url>
+		</repository>
+		<snapshotRepository>
+			<id>public-snapshot</id>
+			<url>dav:${snapshotRepoUrl}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 </project>
