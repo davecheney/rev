@@ -1,10 +1,10 @@
-package net.cheney.rev.reactor;
+package net.cheney.rev.channel;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 import net.cheney.rev.actor.Message;
-import net.cheney.rev.channel.AsyncServerChannel;
+import net.cheney.rev.reactor.Reactor;
 
 public final class BindMessage extends Message<Reactor, AsyncServerChannel> {
 

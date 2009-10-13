@@ -1,8 +1,9 @@
-package net.cheney.rev.channel;
+package net.cheney.rev.reactor;
 
 import java.nio.channels.SelectableChannel;
 
-import net.cheney.rev.reactor.Reactor;
+import net.cheney.rev.channel.AsyncChannel;
+import net.cheney.rev.channel.UpdateInterestMessage;
 
 public final class DisableInterestMessage extends UpdateInterestMessage {
 

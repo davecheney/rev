@@ -2,13 +2,15 @@ package net.cheney.rev.channel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
 import javax.annotation.Nonnull;
 
 import net.cheney.rev.protocol.ServerProtocolFactory;
-import net.cheney.rev.reactor.BindMessage;
+import net.cheney.rev.reactor.EnableInterestMessage;
+import net.cheney.rev.reactor.RegisterAsyncServerChannelMessage;
 
 public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 
@@ -30,13 +32,18 @@ public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 		return channel;
 	}
 
-	public void receive(@Nonnull BindMessage msg) {
+	void receive(@Nonnull BindMessage msg) {
 		try {
 			ServerSocket socket = channel().socket();
 			socket.bind(msg.addr());
-			msg.sender().send(new RegisterAsyncServerChannelMessage(this, channel()));
+			msg.sender().send(new RegisterAsyncServerChannelMessage(this));
 		} catch (IOException e) {
 			factory.send(new UnableToBindMessage(this));
 		}
+	}
+
+	@Override
+	void receive(ChannelRegistrationCompleteMessage<AsyncServerChannel> msg) {
+		msg.sender().send(new EnableInterestMessage(this, channel(), SelectionKey.OP_ACCEPT));
 	}
 }

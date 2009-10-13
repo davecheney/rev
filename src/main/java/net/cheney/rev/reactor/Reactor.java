@@ -12,10 +12,9 @@ import javax.annotation.Nonnull;
 import net.cheney.rev.actor.Actor;
 import net.cheney.rev.channel.AsyncServerChannel;
 import net.cheney.rev.channel.AsyncSocketChannel;
-import net.cheney.rev.channel.DisableInterestMessage;
-import net.cheney.rev.channel.EnableInterestMessage;
-import net.cheney.rev.channel.RegisterAsyncServerChannelMessage;
-import net.cheney.rev.channel.RegisterAsyncSocketChannelMessage;
+import net.cheney.rev.channel.BindMessage;
+import net.cheney.rev.channel.ChannelClosedMessage;
+import net.cheney.rev.channel.ChannelRegistrationCompleteMessage;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 
 public final class Reactor extends Actor<Reactor> {
@@ -31,7 +30,16 @@ public final class Reactor extends Actor<Reactor> {
 		sc.send(new BindMessage(this, addr));
 	}
 
-	public void receive(@Nonnull RegisterAsyncSocketChannelMessage msg) {
+	void receive(@Nonnull RegisterAsyncServerChannelMessage msg) {
+		try {
+			msg.channel().register(this.selector, 0, msg.sender());
+			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncServerChannel>(this));
+		} catch (ClosedChannelException e) {
+			msg.sender().send(new ChannelClosedMessage<AsyncServerChannel>(this));
+		}
+	}
+	
+	void receive(@Nonnull RegisterAsyncSocketChannelMessage msg) {
 		try {
 			msg.channel().register(this.selector, 0, msg.sender());
 			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncSocketChannel>(this));
@@ -40,23 +48,14 @@ public final class Reactor extends Actor<Reactor> {
 		}
 	}
 
-	public void receive(@Nonnull EnableInterestMessage msg) {
+	void receive(@Nonnull EnableInterestMessage msg) {
 		SelectionKey sk = msg.channel().keyFor(this.selector);
 		sk.interestOps(sk.interestOps() | msg.ops());
 	}
 	
-	public void receive(@Nonnull DisableInterestMessage msg) {
+	void receive(@Nonnull DisableInterestMessage msg) {
 		SelectionKey sk = msg.channel().keyFor(this.selector);
 		sk.interestOps(sk.interestOps() & ~msg.ops());
-	}
-
-	public void receive(@Nonnull RegisterAsyncServerChannelMessage msg) {
-		try {
-			msg.channel().register(this.selector, 0, msg.sender());
-			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncServerChannel>(this));
-		} catch (ClosedChannelException e) {
-			msg.sender().send(new ChannelClosedMessage<AsyncServerChannel>(this));
-		}
 	}
 
 }

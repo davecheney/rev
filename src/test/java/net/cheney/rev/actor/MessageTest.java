@@ -1,6 +1,5 @@
 package net.cheney.rev.actor;
 
-
 import org.junit.Test;
 
 public class MessageTest {
@@ -13,4 +12,5 @@ public class MessageTest {
 		client.ping(server).await();
 		
 	}
+	
 }

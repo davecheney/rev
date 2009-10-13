@@ -1,9 +1,9 @@
-package net.cheney.rev.reactor;
+package net.cheney.rev.channel;
 
 import net.cheney.rev.actor.Message;
-import net.cheney.rev.channel.AsyncChannel;
+import net.cheney.rev.reactor.Reactor;
 
-public final class ChannelClosedMessage<T extends AsyncChannel<?>> extends Message<Reactor, T> {
+public final class ChannelClosedMessage<T extends AsyncChannel<T>> extends Message<Reactor, T> {
 
 	public ChannelClosedMessage(Reactor sender) {
 		super(sender);
