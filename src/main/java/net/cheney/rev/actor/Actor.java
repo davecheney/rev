@@ -18,18 +18,13 @@ public abstract class Actor<RECEIVER> implements Runnable {
 		schedule();
 	}
 	
-	@Nonnull
-	protected final Message<?, RECEIVER> pollMailbox() {
-		return mailbox.poll();
-	}
-
 	private void schedule() {
 		executor.execute(this);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public final void run() {
-		for(Message<?, RECEIVER> m = pollMailbox() ; m != null ; m = pollMailbox()) {
+		for(Message<?, RECEIVER> m = mailbox.poll() ; m != null ; m = mailbox.poll()) {
 			m.accept((RECEIVER)this);
 		}
 	}

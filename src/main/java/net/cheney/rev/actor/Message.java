@@ -6,7 +6,7 @@ public abstract class Message<SENDER, RECEIVER> {
 
 	private final SENDER sender;
 
-	public Message(SENDER sender) {
+	public Message(@Nonnull SENDER sender) {
 		this.sender = sender;
 	}
 	
