@@ -6,5 +6,5 @@ public abstract class Message<RECEIVER> {
 
 	public abstract Object sender();
 
-	public abstract void accept(@Nonnull RECEIVER visitor);
+	public abstract void accept(@Nonnull RECEIVER receiver);
 }

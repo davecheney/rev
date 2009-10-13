@@ -1,85 +1,95 @@
 package net.cheney.rev.actor;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.Test;
 
 public class MessageTest {
 
-	public class Ping extends Actor<Pong> {
+	public class Client extends Actor<Client> {
+
+		private CountDownLatch latch = new CountDownLatch(1);
+		
+		@Override
+		public void run() {
+			for(Message<Client> m = pollMailbox() ; m != null ; m = pollMailbox()) {
+				m.accept(this);
+			}
+		}
+		
+		public CountDownLatch ping(Server server) {
+			server.send(new Ping(this));
+			return latch;
+		}
+
+		public void receive(Ack ack) {
+			latch.countDown();
+		}
+
+	}
+	
+	public class Server extends Actor<Server> {
 
 		@Override
 		public void run() {
-			for(Message<Pong> m = pollMailbox() ; m != null ; m = pollMailbox()) {
+			for(Message<Server> m = pollMailbox() ; m != null ; m = pollMailbox()) {
 				m.accept(this);
 			}
 		}
 
-		public void receive(PongMessage pongMessage) {
-			// TODO Auto-generated method stub
-			
+		public void receive(Ping ping) {
+			ping.sender().send(new Ack(this));
 		}
 		
 	}
 	
-	public class PingMessage extends Message<Pong> {
+	public class Ping extends Message<Server> {
 
-		private final Ping sender;
+		private final Client sender;
 
-		public PingMessage(Ping sender) {
+		public Ping(Client sender) {
 			this.sender = sender;
 		}
 		
 		@Override
-		public void accept(Pong visitor) {
+		public void accept(Server visitor) {
 			visitor.receive(this);
 		}
 
 		@Override
-		public Ping sender() {
+		public Client sender() {
 			return sender;
 		}
 		
 	}
 	
-	public class PongMessage extends Message<Ping> {
+	public class Ack extends Message<Client> {
 
-		private final Pong sender;
+		private final Server sender;
 
-		public PongMessage(Pong sender) {
+		public Ack(Server sender) {
 			this.sender = sender;
 		}
 		
 		@Override
-		public void accept(Ping visitor) {
+		public void accept(Client visitor) {
 			visitor.receive(this);
 		}
 
 		@Override
-		public Pong sender() {
+		public Server sender() {
 			return sender;
 		}
 		
 	}
 	
-	public class Pong extends Actor<Ping> {
-
-		@Override
-		public void run() {
-			for(Message<Ping> m = pollMailbox() ; m != null ; m = pollMailbox()) {
-				m.accept(this);
-			}
-		}
-
-		public void receive(PingMessage pingMessage) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		
-		
-	}
 	
-	@Test
-	public void messageTest() {
+	@Test()
+	public void messageTest() throws InterruptedException {
+		Client client = new Client();
+		Server server = new Server();
+		
+		client.ping(server).await();
 		
 	}
 }
