@@ -2,10 +2,12 @@ package net.cheney.rev.reactor;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
@@ -29,6 +31,11 @@ public final class Reactor extends Actor<Reactor> {
 		AsyncServerChannel sc = new AsyncServerChannel(factory);
 		sc.send(new BindMessage(this, addr));
 	}
+	
+//	public Future<AsyncSocketChannel> connect(@Nonnull SocketAddress addr) throws IOException {
+//		AsyncSocketChannel sc = new AsyncSocketChannel();
+//		sc.send(new ConnectMessage(this, addr));
+//	}
 	
 	void receive(@Nonnull RegisterAsyncServerChannelMessage msg) {
 		try {
