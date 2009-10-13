@@ -11,20 +11,27 @@ public abstract class Actor<RECEIVER> implements Runnable {
 
 	private final ExecutorService executor = Executors.newFixedThreadPool(10);
 	
-	private final Queue<Message<RECEIVER>> mailbox = new LinkedBlockingDeque<Message<RECEIVER>>();
+	private final Queue<Message<?, RECEIVER>> mailbox = new LinkedBlockingDeque<Message<?, RECEIVER>>();
 
-	public final void send(@Nonnull Message<RECEIVER> message) {
+	public final void send(@Nonnull Message<?, RECEIVER> message) {
 		mailbox.offer(message);
 		schedule();
 	}
 	
 	@Nonnull
-	protected final Message<RECEIVER> pollMailbox() {
+	protected final Message<?, RECEIVER> pollMailbox() {
 		return mailbox.poll();
 	}
 
 	private void schedule() {
 		executor.execute(this);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final void run() {
+		for(Message<?, RECEIVER> m = pollMailbox() ; m != null ; m = pollMailbox()) {
+			m.accept((RECEIVER)this);
+		}
 	}
 	
 }

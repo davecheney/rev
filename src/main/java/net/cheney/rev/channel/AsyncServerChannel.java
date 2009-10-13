@@ -7,7 +7,6 @@ import java.nio.channels.spi.SelectorProvider;
 
 import javax.annotation.Nonnull;
 
-import net.cheney.rev.actor.Message;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.BindMessage;
 
@@ -31,21 +30,13 @@ public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 		return channel;
 	}
 
-	@Override
-	public void run() {
-		for (Message<AsyncServerChannel> m = pollMailbox(); m != null; m = pollMailbox()) {
-			m.accept(this);
-		}
-	}
-
 	public void receive(@Nonnull BindMessage msg) {
 		try {
 			ServerSocket socket = channel().socket();
 			socket.bind(msg.addr());
 			msg.sender().send(new RegisterAsyncServerChannelMessage(this, channel()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			factory.send(new UnableToBindMessage(this));
 		}
 	}
 }

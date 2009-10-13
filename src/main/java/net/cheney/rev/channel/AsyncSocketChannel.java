@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-import net.cheney.rev.actor.Message;
-
 public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChannel> {
 
 	private final SocketChannel channel;
@@ -18,13 +16,6 @@ public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChanne
 	@Override
 	protected SocketChannel channel() {
 		return this.channel;
-	}
-
-	@Override
-	public void run() {
-		for (Message<AsyncSocketChannel> m = pollMailbox(); m != null; m = pollMailbox()) {
-			m.accept(this);
-		}
 	}
 
 }

@@ -1,21 +1,14 @@
 package net.cheney.rev.actor;
 
-public class Ack extends Message<Client> {
-
-	private final Server sender;
+public class Ack extends Message<Server, Client> {
 
 	public Ack(Server sender) {
-		this.sender = sender;
+		super(sender);
 	}
-	
+
 	@Override
 	public void accept(Client visitor) {
 		visitor.receive(this);
 	}
 
-	@Override
-	public Server sender() {
-		return sender;
-	}
-	
 }

@@ -1,21 +1,14 @@
 package net.cheney.rev.actor;
 
-public class Ping extends Message<Server> {
-
-	private final Client sender;
+public class Ping extends Message<Client, Server> {
 
 	public Ping(Client sender) {
-		this.sender = sender;
+		super(sender);
 	}
-	
+
 	@Override
 	public void accept(Server visitor) {
 		visitor.receive(this);
 	}
 
-	@Override
-	public Client sender() {
-		return sender;
-	}
-	
 }

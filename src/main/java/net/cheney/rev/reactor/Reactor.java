@@ -10,7 +10,6 @@ import java.nio.channels.spi.SelectorProvider;
 import javax.annotation.Nonnull;
 
 import net.cheney.rev.actor.Actor;
-import net.cheney.rev.actor.Message;
 import net.cheney.rev.channel.AsyncServerChannel;
 import net.cheney.rev.channel.AsyncSocketChannel;
 import net.cheney.rev.channel.DisableInterestMessage;
@@ -32,13 +31,6 @@ public final class Reactor extends Actor<Reactor> {
 		sc.send(new BindMessage(this, addr));
 	}
 
-	@Override
-	public void run() {
-		for(Message<Reactor> m = pollMailbox() ; m != null ; m = pollMailbox()) {
-			m.accept(this);
-		}
-	}
-	
 	public void receive(@Nonnull RegisterAsyncSocketChannelMessage msg) {
 		try {
 			msg.channel().register(this.selector, 0, msg.sender());

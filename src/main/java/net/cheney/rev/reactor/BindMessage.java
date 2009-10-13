@@ -6,13 +6,12 @@ import java.net.SocketAddress;
 import net.cheney.rev.actor.Message;
 import net.cheney.rev.channel.AsyncServerChannel;
 
-public final class BindMessage extends Message<AsyncServerChannel> {
+public final class BindMessage extends Message<Reactor, AsyncServerChannel> {
 
 	private final InetSocketAddress addr;
-	private Reactor sender;
 
 	public BindMessage(Reactor sender, InetSocketAddress addr) {
-		this.sender = sender;
+		super(sender);
 		this.addr = addr;
 	}
 
@@ -20,11 +19,6 @@ public final class BindMessage extends Message<AsyncServerChannel> {
 		return addr;
 	}
 	
-	@Override
-	public Reactor sender() {
-		return sender;
-	}
-
 	@Override
 	public void accept(AsyncServerChannel visitor) {
 		visitor.receive(this);	
