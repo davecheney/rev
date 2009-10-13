@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 
 public abstract class Actor<RECEIVER> implements Runnable {
 
-	private static final ExecutorService executor = Executors.newFixedThreadPool(10);
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(10);
 	
 	private final Queue<Message<?, RECEIVER>> mailbox = new LinkedBlockingDeque<Message<?, RECEIVER>>();
 
@@ -23,7 +23,7 @@ public abstract class Actor<RECEIVER> implements Runnable {
 	}
 	
 	private void schedule() {
-		executor.execute(this);
+		EXECUTOR.execute(this);
 	}
 	
 	@SuppressWarnings("unchecked")
