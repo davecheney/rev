@@ -44,7 +44,7 @@ public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 	}
 
 	@Override
-	void receive(ChannelRegistrationCompleteMessage<AsyncServerChannel> msg) {
+	void receive(@Nonnull ChannelRegistrationCompleteMessage<AsyncServerChannel> msg) {
 		msg.sender().send(enableAcceptInterest());
 	}
 

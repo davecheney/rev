@@ -29,7 +29,7 @@ public final class Reactor extends Actor<Reactor> {
 		AsyncServerChannel sc = new AsyncServerChannel(factory);
 		sc.send(new BindMessage(this, addr));
 	}
-
+	
 	void receive(@Nonnull RegisterAsyncServerChannelMessage msg) {
 		try {
 			msg.channel().register(this.selector, 0, msg.sender());
