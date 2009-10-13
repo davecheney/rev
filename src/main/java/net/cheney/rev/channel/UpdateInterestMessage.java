@@ -7,17 +7,15 @@ import net.cheney.rev.reactor.Reactor;
 
 public abstract class UpdateInterestMessage extends Message<AsyncChannel<?>, Reactor> {
 
-	private final SelectableChannel channel;
 	private final int ops;
 
-	public UpdateInterestMessage(AsyncChannel<?> sender, SelectableChannel channel, int ops) {
+	public UpdateInterestMessage(AsyncChannel<?> sender, int ops) {
 		super(sender);
-		this.channel = channel;
 		this.ops = ops;
 	}
 	
 	public final SelectableChannel channel() {
-		return channel;
+		return this.sender().channel();
 	}
 	
 	public final int ops() {

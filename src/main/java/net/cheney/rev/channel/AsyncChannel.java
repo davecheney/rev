@@ -7,6 +7,9 @@ import java.nio.channels.SelectableChannel;
 import javax.annotation.Nonnull;
 
 import net.cheney.rev.actor.Actor;
+import net.cheney.rev.actor.Message;
+import net.cheney.rev.reactor.EnableInterestMessage;
+import net.cheney.rev.reactor.Reactor;
 
 public abstract class AsyncChannel<T extends AsyncChannel<T>> extends Actor<T> implements Closeable {
 
@@ -26,5 +29,9 @@ public abstract class AsyncChannel<T extends AsyncChannel<T>> extends Actor<T> i
 	}
 
 	abstract void receive(@Nonnull ChannelRegistrationCompleteMessage<T> channelRegistrationCompleteMessage);
+	
+	protected Message<?, Reactor> enableInterest(int ops) {
+		return new EnableInterestMessage(this, ops);
+	}
 	
 }

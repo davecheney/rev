@@ -8,8 +8,9 @@ import java.nio.channels.spi.SelectorProvider;
 
 import javax.annotation.Nonnull;
 
+import net.cheney.rev.actor.Message;
 import net.cheney.rev.protocol.ServerProtocolFactory;
-import net.cheney.rev.reactor.EnableInterestMessage;
+import net.cheney.rev.reactor.Reactor;
 import net.cheney.rev.reactor.RegisterAsyncServerChannelMessage;
 
 public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
@@ -44,6 +45,10 @@ public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 
 	@Override
 	void receive(ChannelRegistrationCompleteMessage<AsyncServerChannel> msg) {
-		msg.sender().send(new EnableInterestMessage(this, channel(), SelectionKey.OP_ACCEPT));
+		msg.sender().send(enableAcceptInterest());
+	}
+
+	private Message<?, Reactor> enableAcceptInterest() {
+		return enableInterest(SelectionKey.OP_ACCEPT);
 	}
 }

@@ -5,8 +5,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-import net.cheney.rev.reactor.EnableInterestMessage;
-
+import net.cheney.rev.actor.Message;
+import net.cheney.rev.reactor.Reactor;
 
 public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChannel> {
 
@@ -24,7 +24,10 @@ public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChanne
 
 	@Override
 	void receive(ChannelRegistrationCompleteMessage<AsyncSocketChannel> msg) {
-		msg.sender().send(new EnableInterestMessage(this, channel(), SelectionKey.OP_CONNECT));
+		msg.sender().send(enableConnectInterest());
 	}
 
+	private Message<?, Reactor> enableConnectInterest() {
+		return enableInterest(SelectionKey.OP_CONNECT);
+	}
 }
