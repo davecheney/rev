@@ -5,7 +5,7 @@ import org.junit.Test;
 
 public class MessageTest {
 
-	@Test()
+	@Test(timeout=1000L)
 	public void messageTest() throws InterruptedException {
 		Client client = new Client();
 		Server server = new Server();
