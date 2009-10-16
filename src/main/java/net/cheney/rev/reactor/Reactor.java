@@ -13,10 +13,10 @@ import javax.annotation.Nonnull;
 
 import net.cheney.rev.actor.Actor;
 import net.cheney.rev.channel.AsyncServerChannel;
-import net.cheney.rev.channel.AsyncSocketChannel;
 import net.cheney.rev.channel.BindMessage;
 import net.cheney.rev.channel.ChannelClosedMessage;
 import net.cheney.rev.channel.ChannelRegistrationCompleteMessage;
+import net.cheney.rev.channel.RegisterAsyncChannelMessage;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 
 public final class Reactor extends Actor<Reactor> {
@@ -32,29 +32,15 @@ public final class Reactor extends Actor<Reactor> {
 		sc.send(new BindMessage(this, addr));
 	}
 	
-//	public Future<AsyncSocketChannel> connect(@Nonnull SocketAddress addr) throws IOException {
-//		AsyncSocketChannel sc = new AsyncSocketChannel();
-//		sc.send(new ConnectMessage(this, addr));
-//	}
-	
-	void receive(@Nonnull RegisterAsyncServerChannelMessage msg) {
+	public void receive(@Nonnull RegisterAsyncChannelMessage msg) {
 		try {
 			msg.channel().register(this.selector, 0, msg.sender());
-			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncServerChannel>(this));
+			msg.sender().send(new ChannelRegistrationCompleteMessage(this));
 		} catch (ClosedChannelException e) {
-			msg.sender().send(new ChannelClosedMessage<AsyncServerChannel>(this));
+			msg.sender().send(new ChannelClosedMessage(this));
 		}
 	}
 	
-	void receive(@Nonnull RegisterAsyncSocketChannelMessage msg) {
-		try {
-			msg.channel().register(this.selector, 0, msg.sender());
-			msg.sender().send(new ChannelRegistrationCompleteMessage<AsyncSocketChannel>(this));
-		} catch (ClosedChannelException e) {
-			msg.sender().send(new ChannelClosedMessage<AsyncSocketChannel>(this));
-		}
-	}
-
 	void receive(@Nonnull EnableInterestMessage msg) {
 		SelectionKey sk = msg.channel().keyFor(this.selector);
 		sk.interestOps(sk.interestOps() | msg.ops());

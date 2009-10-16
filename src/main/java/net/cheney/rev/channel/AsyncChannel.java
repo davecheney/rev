@@ -8,10 +8,11 @@ import javax.annotation.Nonnull;
 
 import net.cheney.rev.actor.Actor;
 import net.cheney.rev.actor.Message;
+import net.cheney.rev.reactor.DisableInterestMessage;
 import net.cheney.rev.reactor.EnableInterestMessage;
 import net.cheney.rev.reactor.Reactor;
 
-public abstract class AsyncChannel<T extends AsyncChannel<T>> extends Actor<T> implements Closeable {
+public abstract class AsyncChannel extends Actor<AsyncChannel> implements Closeable {
 
 	protected abstract SelectableChannel channel();
 	
@@ -24,14 +25,20 @@ public abstract class AsyncChannel<T extends AsyncChannel<T>> extends Actor<T> i
 		}
 	}
 	
-	final void receive(@Nonnull ChannelClosedMessage<T> msg) {
+	final void receive(@Nonnull ChannelClosedMessage msg) {
 		close();
 	}
 
-	abstract void receive(@Nonnull ChannelRegistrationCompleteMessage<T> channelRegistrationCompleteMessage);
+	abstract void receive(@Nonnull ChannelRegistrationCompleteMessage msg);
 	
 	protected Message<?, Reactor> enableInterest(int ops) {
 		return new EnableInterestMessage(this, ops);
 	}
 	
+	protected Message<?, Reactor> disableInterest(int ops) {
+		return new DisableInterestMessage(this, ops);
+	}
+
+	abstract void receive(@Nonnull BindMessage msg);
+
 }

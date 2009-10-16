@@ -11,9 +11,8 @@ import javax.annotation.Nonnull;
 import net.cheney.rev.actor.Message;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.Reactor;
-import net.cheney.rev.reactor.RegisterAsyncServerChannelMessage;
 
-public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
+public final class AsyncServerChannel extends AsyncChannel {
 
 	private final ServerProtocolFactory factory;
 	private final ServerSocketChannel channel;
@@ -37,18 +36,19 @@ public final class AsyncServerChannel extends AsyncChannel<AsyncServerChannel> {
 		try {
 			ServerSocket socket = channel().socket();
 			socket.bind(msg.addr());
-			msg.sender().send(new RegisterAsyncServerChannelMessage(this));
+			msg.sender().send(new RegisterAsyncChannelMessage(this));
 		} catch (IOException e) {
 			factory.send(new UnableToBindMessage(this));
 		}
 	}
 
 	@Override
-	void receive(@Nonnull ChannelRegistrationCompleteMessage<AsyncServerChannel> msg) {
+	void receive(@Nonnull ChannelRegistrationCompleteMessage msg) {
 		msg.sender().send(enableAcceptInterest());
 	}
 
 	private Message<?, Reactor> enableAcceptInterest() {
 		return enableInterest(SelectionKey.OP_ACCEPT);
 	}
+
 }

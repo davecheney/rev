@@ -11,9 +11,8 @@ import javax.annotation.Nonnull;
 import net.cheney.rev.actor.Message;
 import net.cheney.rev.reactor.ConnectMessage;
 import net.cheney.rev.reactor.Reactor;
-import net.cheney.rev.reactor.RegisterAsyncSocketChannelMessage;
 
-public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChannel> {
+public final class AsyncSocketChannel extends AsyncByteChannel {
 
 	private final SocketChannel channel;
 
@@ -28,7 +27,7 @@ public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChanne
 	}
 
 	@Override
-	void receive(@Nonnull ChannelRegistrationCompleteMessage<AsyncSocketChannel> msg) {
+	void receive(@Nonnull ChannelRegistrationCompleteMessage msg) {
 		msg.sender().send(enableConnectInterest());
 	}
 
@@ -40,10 +39,15 @@ public final class AsyncSocketChannel extends AsyncByteChannel<AsyncSocketChanne
 		try {
 			Socket socket = channel().socket();
 			socket.connect(msg.addr());
-			msg.sender().send(new RegisterAsyncSocketChannelMessage(this));
+			msg.sender().send(new RegisterAsyncChannelMessage(this));
 		} catch (IOException e) {
 //			factory.send(new UnableToBindMessage(this));
 		}
+	}
+
+	@Override
+	void receive(BindMessage msg) {
+		throw new IllegalStateException();
 	}
 
 }

@@ -5,9 +5,9 @@ import java.nio.channels.SelectableChannel;
 import net.cheney.rev.actor.Message;
 import net.cheney.rev.reactor.Reactor;
 
-public abstract class RegisterAsyncChannelMessage<T extends AsyncChannel<T>> extends Message<AsyncChannel<T>, Reactor> {
+public class RegisterAsyncChannelMessage extends Message<AsyncChannel, Reactor> {
 
-	public RegisterAsyncChannelMessage(T sender) {
+	protected RegisterAsyncChannelMessage(AsyncChannel sender) {
 		super(sender);
 	}
 
@@ -16,6 +16,8 @@ public abstract class RegisterAsyncChannelMessage<T extends AsyncChannel<T>> ext
 	}
 
 	@Override
-	public abstract void accept(Reactor receiver);
+	public void accept(Reactor receiver) {
+		receiver.receive(this);
+	}
 
 }

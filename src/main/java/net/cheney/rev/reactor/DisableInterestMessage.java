@@ -5,7 +5,7 @@ import net.cheney.rev.channel.UpdateInterestMessage;
 
 public final class DisableInterestMessage extends UpdateInterestMessage {
 
-	public DisableInterestMessage(AsyncChannel<?> sender, int ops) {
+	public DisableInterestMessage(AsyncChannel sender, int ops) {
 		super(sender, ops);
 	}
 

@@ -5,7 +5,7 @@ import java.net.SocketAddress;
 import net.cheney.rev.actor.Message;
 import net.cheney.rev.reactor.Reactor;
 
-public final class BindMessage extends Message<Reactor, AsyncServerChannel> {
+public final class BindMessage extends Message<Reactor, AsyncChannel> {
 
 	private final SocketAddress addr;
 
@@ -19,7 +19,7 @@ public final class BindMessage extends Message<Reactor, AsyncServerChannel> {
 	}
 	
 	@Override
-	public void accept(AsyncServerChannel visitor) {
+	public void accept(AsyncChannel visitor) {
 		visitor.receive(this);	
 	}
 
