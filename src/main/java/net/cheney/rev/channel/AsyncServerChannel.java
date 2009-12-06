@@ -1,54 +1,54 @@
 package net.cheney.rev.channel;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.Deque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 
-import javax.annotation.Nonnull;
+public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implements Runnable {
+	
+	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
 
-import net.cheney.rev.actor.Message;
-import net.cheney.rev.protocol.ServerProtocolFactory;
-import net.cheney.rev.reactor.Reactor;
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4); 
 
-public final class AsyncServerChannel extends AsyncChannel {
+	private final ServerSocketChannel sc;
 
-	private final ServerProtocolFactory factory;
-	private final ServerSocketChannel channel;
-
-	public AsyncServerChannel(ServerProtocolFactory factory) throws IOException {
-		this.channel = SelectorProvider.provider().openServerSocketChannel();
-		this.channel.configureBlocking(false);
-		this.factory = factory;
+	public AsyncServerChannel() throws IOException {
+		this.sc = configureServerSocketChannel(createServerSocketChannel());
 	}
 	
-	public ServerProtocolFactory factory() {
-		return factory;
+	private static ServerSocketChannel configureServerSocketChannel(ServerSocketChannel sc) throws IOException {
+		sc.configureBlocking(false);
+		return sc;
+	}
+
+	private static ServerSocketChannel createServerSocketChannel() throws IOException {
+		return SelectorProvider.provider().openServerSocketChannel();
+	}
+
+	@Override
+	ServerSocketChannel channel() {
+		return sc;
+	}
+
+	@Override
+	void deliver(AsyncChannel.IORequest msg) {
+		mailbox.addLast(msg);
+		schedule();
+	}
+
+	private void schedule() {
+		EXECUTOR.execute(this);
 	}
 	
 	@Override
-	protected ServerSocketChannel channel() {
-		return channel;
-	}
-
-	void receive(@Nonnull BindMessage msg) {
-		try {
-			ServerSocket socket = channel().socket();
-			socket.bind(msg.addr());
-			msg.sender().send(new RegisterAsyncChannelMessage(this));
-		} catch (IOException e) {
-			factory.send(new UnableToBindMessage(this));
+	public void run() {
+		for(AsyncChannel.IORequest msg = mailbox.pollFirst() ; msg != null ; msg = mailbox.pollFirst()) {
+			msg.accept(this);
 		}
 	}
-
-	@Override
-	void receive(@Nonnull ChannelRegistrationCompleteMessage msg) {
-		msg.sender().send(enableAcceptInterest());
-	}
-
-	private Message<?, Reactor> enableAcceptInterest() {
-		return enableInterest(SelectionKey.OP_ACCEPT);
-	}
-
+	
 }

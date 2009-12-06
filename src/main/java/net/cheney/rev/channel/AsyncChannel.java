@@ -1,44 +1,17 @@
 package net.cheney.rev.channel;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 
-import javax.annotation.Nonnull;
+public abstract class AsyncChannel<T extends SelectableChannel> {
 
-import net.cheney.rev.actor.Actor;
-import net.cheney.rev.actor.Message;
-import net.cheney.rev.reactor.DisableInterestMessage;
-import net.cheney.rev.reactor.EnableInterestMessage;
-import net.cheney.rev.reactor.Reactor;
+	public static abstract class IORequest {
 
-public abstract class AsyncChannel extends Actor<AsyncChannel> implements Closeable {
-
-	protected abstract SelectableChannel channel();
-	
-	@Override
-	public final void close() {
-		try {
-			this.channel().close();
-		} catch (IOException e) {
-			// ignore
-		}
+		public abstract void accept(AsyncChannel<?> channel);
+		
 	}
 	
-	final void receive(@Nonnull ChannelClosedMessage msg) {
-		close();
-	}
-
-	abstract void receive(@Nonnull ChannelRegistrationCompleteMessage msg);
+	abstract T channel();
 	
-	protected Message<?, Reactor> enableInterest(int ops) {
-		return new EnableInterestMessage(this, ops);
-	}
-	
-	protected Message<?, Reactor> disableInterest(int ops) {
-		return new DisableInterestMessage(this, ops);
-	}
-
-	abstract void receive(@Nonnull BindMessage msg);
+	abstract void deliver(AsyncChannel.IORequest msg);
 
 }

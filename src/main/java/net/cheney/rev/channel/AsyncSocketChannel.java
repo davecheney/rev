@@ -1,53 +1,55 @@
 package net.cheney.rev.channel;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.Deque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 
-import javax.annotation.Nonnull;
+public class AsyncSocketChannel extends AsyncByteChannel<SocketChannel> implements Runnable {
+	
+	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
 
-import net.cheney.rev.actor.Message;
-import net.cheney.rev.reactor.ConnectMessage;
-import net.cheney.rev.reactor.Reactor;
-
-public final class AsyncSocketChannel extends AsyncByteChannel {
-
-	private final SocketChannel channel;
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4); 
+	
+	private final SocketChannel sc;
 
 	public AsyncSocketChannel() throws IOException {
-		this.channel = SelectorProvider.provider().openSocketChannel();
-		this.channel.configureBlocking(false);
+		this.sc = configureSocketChannel(createSocketChannel());
+	}
+	
+	private static SocketChannel configureSocketChannel(SocketChannel sc) throws IOException {
+		sc.configureBlocking(false);
+		return sc;
+	}
+
+	private static SocketChannel createSocketChannel() throws IOException {
+		return SelectorProvider.provider().openSocketChannel();
 	}
 
 	@Override
-	protected SocketChannel channel() {
-		return this.channel;
+	SocketChannel channel() {
+		return sc;
+	}
+	
+	@Override
+	void deliver(AsyncChannel.IORequest msg) {
+		mailbox.addLast(msg);
+		schedule();
+	}
+
+	private void schedule() {
+		EXECUTOR.execute(this);
 	}
 
 	@Override
-	void receive(@Nonnull ChannelRegistrationCompleteMessage msg) {
-		msg.sender().send(enableConnectInterest());
-	}
-
-	private Message<?, Reactor> enableConnectInterest() {
-		return enableInterest(SelectionKey.OP_CONNECT);
-	}
-
-	public void recieve(ConnectMessage msg) {
-		try {
-			Socket socket = channel().socket();
-			socket.connect(msg.addr());
-			msg.sender().send(new RegisterAsyncChannelMessage(this));
-		} catch (IOException e) {
-//			factory.send(new UnableToBindMessage(this));
+	public void run() {
+		for(AsyncChannel.IORequest msg = mailbox.pollFirst() ; msg != null ; msg = mailbox.pollFirst()) {
+			msg.accept(this);
 		}
 	}
 
-	@Override
-	void receive(BindMessage msg) {
-		throw new IllegalStateException();
-	}
-
+	
 }
