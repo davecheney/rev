@@ -1,6 +1,7 @@
 package net.cheney.rev.reactor;
 
 import java.io.IOException;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Collections;
@@ -38,10 +39,69 @@ public class Reactor implements Runnable {
 			throw new IllegalStateException();
 		}
 
+		public int readyOps() {
+			return readyOps;
+		}
+
+	}
+	
+	abstract static class UpdateInterestRequest extends AsyncChannel.IORequest {
+		
+		public abstract int ops();
+		
+		public abstract SelectableChannel channel();
+		
+		@Override
+		public void accept(AsyncChannel<?> channel) {
+			throw new IllegalStateException();
+		}
+		
+	}
+	
+	public abstract class EnableInterestRequest extends UpdateInterestRequest {
+		
+		@Override
+		public void accept(Reactor reactor) {
+			reactor.receive(this);
+		}
+
+	}
+	
+	public abstract class DisableInterestRequest extends UpdateInterestRequest {
+		
+		@Override
+		public void accept(Reactor reactor) {
+			reactor.receive(this);
+		}
 	}
 
 	public Reactor() throws IOException {
 		this.selector = Selector.open();
+	}
+
+	void receive(EnableInterestRequest msg) {
+		enableInterest(msg.channel(), msg.ops());
+	}
+	
+	private void enableInterest(SelectableChannel channel, int ops) {
+		enableInterest(channel.keyFor(selector), ops);
+	}
+
+	private void enableInterest(SelectionKey sk, int ops) {
+		sk.interestOps(sk.interestOps() | ops);
+	}
+
+	void receive(DisableInterestRequest msg) {
+		disableInterest(msg.channel(), msg.ops());
+	}
+
+
+	private void disableInterest(SelectableChannel channel, int ops) {
+		disableInterest(channel.keyFor(selector), ops);
+	}
+
+	private void disableInterest(SelectionKey sk, int ops) {
+		sk.interestOps(sk.interestOps() & ~ops);		
 	}
 
 	@Override
@@ -64,6 +124,8 @@ public class Reactor implements Runnable {
 	}
 
 	private void handleSelectionKey(SelectionKey key) {
+		// Should the key, not the value of readyOps be send in the notification
+		// in that way, the most current value of ReadyOps may be delivered to the channel
 		channelFromKey(key).send(new ReadyOpsNotification(key.readyOps()));
 	}
 
@@ -85,5 +147,10 @@ public class Reactor implements Runnable {
 	
 	private void wakeup() {
 		selector.wakeup();
+	}
+
+	public void send(UpdateInterestRequest msg) {
+		mailbox.addLast(msg);
+		wakeup();
 	}
 }

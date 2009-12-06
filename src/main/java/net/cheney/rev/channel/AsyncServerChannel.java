@@ -8,6 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import net.cheney.rev.reactor.Reactor;
+import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
+
 public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implements Runnable {
 	
 	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
@@ -16,7 +19,8 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 
 	private final ServerSocketChannel sc;
 
-	public AsyncServerChannel() throws IOException {
+	public AsyncServerChannel(Reactor reactor) throws IOException {
+		super(reactor);
 		this.sc = configureServerSocketChannel(createServerSocketChannel());
 	}
 	
@@ -48,6 +52,13 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 	public void run() {
 		for(AsyncChannel.IORequest msg = mailbox.pollFirst() ; msg != null ; msg = mailbox.pollFirst()) {
 			msg.accept(this);
+		}
+	}
+
+	@Override
+	public void receive(ReadyOpsNotification msg) {
+		switch(msg.readyOps()) {
+		
 		}
 	}
 	
