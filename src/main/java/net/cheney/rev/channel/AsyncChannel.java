@@ -9,7 +9,7 @@ import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
 public abstract class AsyncChannel<T extends SelectableChannel> {
 	
-	private final Reactor reactor;
+	protected final Reactor reactor;
 
 	public AsyncChannel(Reactor reactor) {
 		this.reactor = reactor;

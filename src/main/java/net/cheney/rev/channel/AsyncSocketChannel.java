@@ -24,6 +24,11 @@ public class AsyncSocketChannel extends AsyncByteChannel<SocketChannel> implemen
 		this.sc = configureSocketChannel(createSocketChannel());
 	}
 	
+	public AsyncSocketChannel(Reactor reactor, SocketChannel sc) throws IOException {
+		super(reactor);
+		this.sc = configureSocketChannel(sc);
+	}
+
 	private static SocketChannel configureSocketChannel(SocketChannel sc) throws IOException {
 		sc.configureBlocking(false);
 		return sc;

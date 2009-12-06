@@ -62,9 +62,13 @@ public class Reactor implements Runnable {
 
 		public abstract SelectableChannel channel();
 		
-		public abstract void completed();
+		public void completed() {
+			// yay
+		}
 		
-		public abstract void failed(Throwable t);
+		public void failed(Throwable t) {
+			// fuk
+		}
 		
 		public int intrestOps() {
 			return 0;
@@ -208,18 +212,6 @@ public class Reactor implements Runnable {
 			@Override
 			public AsyncChannel<?> sender() {
 				return channel;
-			}
-			
-			@Override
-			public void failed(Throwable t) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void completed() {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
