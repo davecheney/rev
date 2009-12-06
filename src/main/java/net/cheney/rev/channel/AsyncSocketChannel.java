@@ -60,12 +60,5 @@ public class AsyncSocketChannel extends AsyncByteChannel<SocketChannel> implemen
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void send(net.cheney.rev.channel.AsyncChannel.IORequest msg) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	
 }
