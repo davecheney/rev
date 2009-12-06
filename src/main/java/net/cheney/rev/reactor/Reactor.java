@@ -1,6 +1,7 @@
 package net.cheney.rev.reactor;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -12,6 +13,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import net.cheney.rev.channel.AsyncChannel;
+import net.cheney.rev.channel.AsyncServerChannel;
+import net.cheney.rev.protocol.ServerProtocolFactory;
 
 public class Reactor implements Runnable {
 	
@@ -45,6 +48,31 @@ public class Reactor implements Runnable {
 
 	}
 	
+	public abstract static class ChannelRegistrationRequest extends AsyncChannel.IORequest {
+		
+		@Override
+		public void accept(AsyncChannel<?> channel) {
+			throw new IllegalStateException();
+		}
+		
+		@Override
+		public void accept(Reactor reactor) {
+			reactor.receive(this);
+		}
+
+		public abstract SelectableChannel channel();
+		
+		public abstract void completed();
+		
+		public abstract void failed(Throwable t);
+		
+		public int intrestOps() {
+			return 0;
+		}
+		
+		public abstract AsyncChannel<?> sender(); 
+	}
+	
 	abstract static class UpdateInterestRequest extends AsyncChannel.IORequest {
 		
 		public abstract int ops();
@@ -75,8 +103,23 @@ public class Reactor implements Runnable {
 		}
 	}
 
-	public Reactor() throws IOException {
+	private Reactor() throws IOException {
 		this.selector = Selector.open();
+	}
+	
+	public static Reactor open() throws IOException {
+		Reactor r = new Reactor();
+		r.schedule();
+		return r;
+	}
+
+	void receive(ChannelRegistrationRequest msg) {
+		try {
+			msg.channel().register(selector, msg.intrestOps(), msg.sender());
+			msg.completed();
+		} catch (IOException e) {
+			msg.failed(e);
+		}
 	}
 
 	void receive(EnableInterestRequest msg) {
@@ -151,5 +194,43 @@ public class Reactor implements Runnable {
 	public void send(UpdateInterestRequest msg) {
 		mailbox.addLast(msg);
 		wakeup();
+	}
+
+	public void send(ChannelRegistrationRequest msg) {
+		mailbox.addLast(msg);
+		wakeup();
+	}
+	
+	public void listen(InetSocketAddress addr, ServerProtocolFactory factory) throws IOException {
+		final AsyncServerChannel channel = new AsyncServerChannel(this, addr);
+		send(new ChannelRegistrationRequest() {
+			
+			@Override
+			public AsyncChannel<?> sender() {
+				return channel;
+			}
+			
+			@Override
+			public void failed(Throwable t) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void completed() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public SelectableChannel channel() {
+				return channel.channel();
+			}
+			
+			@Override
+			public int intrestOps() {
+				return SelectionKey.OP_ACCEPT;
+			}
+		});
 	}
 }

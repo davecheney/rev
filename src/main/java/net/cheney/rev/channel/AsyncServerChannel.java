@@ -1,6 +1,7 @@
 package net.cheney.rev.channel;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Deque;
@@ -19,9 +20,10 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 
 	private final ServerSocketChannel sc;
 
-	public AsyncServerChannel(Reactor reactor) throws IOException {
+	public AsyncServerChannel(Reactor reactor, InetSocketAddress addr) throws IOException {
 		super(reactor);
 		this.sc = configureServerSocketChannel(createServerSocketChannel());
+		sc.socket().bind(addr);
 	}
 	
 	private static ServerSocketChannel configureServerSocketChannel(ServerSocketChannel sc) throws IOException {
@@ -34,6 +36,7 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 	}
 
 	@Override
+	public
 	ServerSocketChannel channel() {
 		return sc;
 	}
