@@ -56,7 +56,7 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 	
 	@Override
 	public void run() {
-		for(AsyncChannel.IORequest msg = mailbox.pollFirst() ; msg != null ; msg = mailbox.pollFirst()) {
+		for(AsyncChannel.IORequest msg = mailbox.poll() ; msg != null ; msg = mailbox.poll()) {
 			msg.accept(this);
 		}
 	}
@@ -88,6 +88,11 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 					@Override
 					public SelectableChannel channel() {
 						return channel.channel();
+					}
+					
+					@Override
+					public int intrestOps() {
+						return SelectionKey.OP_READ;
 					}
 				});
 			}

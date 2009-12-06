@@ -23,7 +23,7 @@ public abstract class AsyncByteChannel<T extends SelectableChannel & ByteChannel
 		super(reactor);
 	}
 
-	public static abstract class IORequest extends AsyncChannel.IORequest {
+	static abstract class IORequest extends AsyncChannel.IORequest {
 		
 		public abstract void accept(AsyncByteChannel<?> channel);
 		
@@ -93,11 +93,11 @@ public abstract class AsyncByteChannel<T extends SelectableChannel & ByteChannel
 		deliver(msg);
 	}
 
-	public void disableReadInterest() {
+	void disableReadInterest() {
 		disableInterest(SelectionKey.OP_READ);
 	}
 	
-	public void disableWriteInterest() {
+	void disableWriteInterest() {
 		disableInterest(SelectionKey.OP_WRITE);
 	}
 
