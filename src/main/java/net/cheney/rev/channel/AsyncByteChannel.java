@@ -1,9 +1,13 @@
 package net.cheney.rev.channel;
 
+import java.io.IOException;
 import java.nio.channels.ByteChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.WritableByteChannel;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import javax.annotation.Nonnull;
@@ -36,6 +40,8 @@ public abstract class AsyncByteChannel<T extends SelectableChannel & ByteChannel
 		public void accept(AsyncByteChannel<?> channel) {
 			channel.receive(this);
 		}
+		
+		public abstract boolean readFrom(ReadableByteChannel channel) throws IOException;
 	}
 	
 	public static abstract class WriteRequest extends AsyncByteChannel.IORequest {
@@ -43,13 +49,58 @@ public abstract class AsyncByteChannel<T extends SelectableChannel & ByteChannel
 		public void accept(AsyncByteChannel<?> channel) {
 			channel.receive(this);
 		}
+		
+		public abstract boolean writeTo(WritableByteChannel channel) throws IOException;
 	}
 
+	
+	void doRead() {
+		ReadRequest request = null;
+		try {
+			for(Iterator<ReadRequest> i = readRequests.iterator() ; i.hasNext() ; ) {
+				request = i.next();
+				if(request.readFrom(channel())) {
+					i.remove();
+					request.completed();
+				} else {
+					return;
+				}
+			}
+			disableReadInterest();
+		} catch (IOException e) {
+			request.failed(e);
+		}
+	}
+	
+	void doWrite() {
+		WriteRequest request = null;
+		try {
+			for(Iterator<WriteRequest> i = writeRequests.iterator() ; i.hasNext() ; ) {
+				request = i.next();
+				if(request.writeTo(channel())) {
+					i.remove();
+					request.completed();
+				} else {
+					return;
+				}
+			}
+			disableWriteInterest();
+		} catch (IOException e) {
+			request.failed(e);
+		}
+	}
 	
 	public void send(@Nonnull AsyncByteChannel.IORequest msg) {
 		deliver(msg);
 	}
 
+	public void disableReadInterest() {
+		disableInterest(SelectionKey.OP_READ);
+	}
+	
+	public void disableWriteInterest() {
+		disableInterest(SelectionKey.OP_WRITE);
+	}
 
 	public void receive(WriteRequest writeRequest) {
 		writeRequests.addLast(writeRequest);

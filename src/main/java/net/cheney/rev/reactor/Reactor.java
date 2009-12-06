@@ -95,7 +95,6 @@ public class Reactor implements Runnable {
 		disableInterest(msg.channel(), msg.ops());
 	}
 
-
 	private void disableInterest(SelectableChannel channel, int ops) {
 		disableInterest(channel.keyFor(selector), ops);
 	}
