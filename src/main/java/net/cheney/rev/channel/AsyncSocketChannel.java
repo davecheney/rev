@@ -1,5 +1,6 @@
 package net.cheney.rev.channel;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -8,10 +9,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import javax.annotation.Nonnull;
+
 import net.cheney.rev.reactor.Reactor;
 import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
-public class AsyncSocketChannel extends AsyncByteChannel<SocketChannel> implements Runnable {
+public class AsyncSocketChannel extends AsyncByteChannel<SocketChannel> implements Runnable, Closeable {
 	
 	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
 
@@ -66,4 +69,9 @@ public class AsyncSocketChannel extends AsyncByteChannel<SocketChannel> implemen
 		
 	}
 	
+	@Override
+	public void close() throws IOException {
+		sc.close();
+	}
+		
 }

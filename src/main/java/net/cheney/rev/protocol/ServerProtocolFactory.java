@@ -1,5 +1,9 @@
 package net.cheney.rev.protocol;
 
-public class ServerProtocolFactory extends ProtocolFactory {
+import net.cheney.rev.channel.AsyncSocketChannel;
+
+public abstract class ServerProtocolFactory extends ProtocolFactory {
+
+	public abstract void doAccept(AsyncSocketChannel channel);
 
 }

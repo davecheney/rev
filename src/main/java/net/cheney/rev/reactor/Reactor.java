@@ -1,7 +1,7 @@
 package net.cheney.rev.reactor;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -23,6 +23,15 @@ public class Reactor implements Runnable {
 	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(); 
 
 	private Selector selector;
+	
+	public abstract static class IORequest extends AsyncChannel.IORequest { 
+		
+		@Override
+		final public void accept(AsyncChannel<?> channel) {
+			throw new IllegalStateException();
+		}
+		
+	}
 	
 	public static class ReadyOpsNotification extends AsyncChannel.IORequest {
 
@@ -48,12 +57,7 @@ public class Reactor implements Runnable {
 
 	}
 	
-	public abstract static class ChannelRegistrationRequest extends AsyncChannel.IORequest {
-		
-		@Override
-		public void accept(AsyncChannel<?> channel) {
-			throw new IllegalStateException();
-		}
+	public abstract static class ChannelRegistrationRequest extends Reactor.IORequest {
 		
 		@Override
 		public void accept(Reactor reactor) {
@@ -77,16 +81,11 @@ public class Reactor implements Runnable {
 		public abstract AsyncChannel<?> sender(); 
 	}
 	
-	abstract static class UpdateInterestRequest extends AsyncChannel.IORequest {
+	abstract static class UpdateInterestRequest extends Reactor.IORequest {
 		
 		public abstract int ops();
 		
 		public abstract SelectableChannel channel();
-		
-		@Override
-		public void accept(AsyncChannel<?> channel) {
-			throw new IllegalStateException();
-		}
 		
 	}
 	
@@ -205,8 +204,8 @@ public class Reactor implements Runnable {
 		wakeup();
 	}
 	
-	public void listen(InetSocketAddress addr, ServerProtocolFactory factory) throws IOException {
-		final AsyncServerChannel channel = new AsyncServerChannel(this, addr);
+	public void listen(SocketAddress addr, ServerProtocolFactory factory) throws IOException {
+		final AsyncServerChannel channel = new AsyncServerChannel(this, addr, factory);
 		send(new ChannelRegistrationRequest() {
 			
 			@Override

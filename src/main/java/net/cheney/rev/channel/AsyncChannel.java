@@ -72,16 +72,6 @@ public abstract class AsyncChannel<T extends SelectableChannel> {
 			}
 			
 			@Override
-			public void failed(Throwable t) {
-				// fuk
-			}
-			
-			@Override
-			public void completed() {
-				// yay
-			}
-			
-			@Override
 			public SelectableChannel channel() {
 				return sender().channel();
 			}

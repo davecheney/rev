@@ -25,17 +25,27 @@ public abstract class AsyncByteChannel<T extends SelectableChannel & ByteChannel
 
 	static abstract class IORequest extends AsyncChannel.IORequest {
 		
-		public abstract void accept(AsyncByteChannel<?> channel);
+//		public abstract void accept(AsyncByteChannel<?> channel);
 		
 		public abstract void completed();
 		
 		public abstract void failed(Throwable t);
 		
+		@Override
+		public void accept(AsyncChannel<?> channel) {
+			throw new IllegalArgumentException();
+		}
+		
+		@Override
+		public final void accept(Reactor reactor) {
+			throw new IllegalArgumentException();
+		}
+		
 	}
 	
 	public static abstract class ReadRequest extends AsyncByteChannel.IORequest {
 		
-		@Override
+//		@Override
 		public void accept(AsyncByteChannel<?> channel) {
 			channel.receive(this);
 		}
@@ -44,7 +54,8 @@ public abstract class AsyncByteChannel<T extends SelectableChannel & ByteChannel
 	}
 	
 	public static abstract class WriteRequest extends AsyncByteChannel.IORequest {
-		@Override
+		
+//		@Override
 		public void accept(AsyncByteChannel<?> channel) {
 			channel.receive(this);
 		}

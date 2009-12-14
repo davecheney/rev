@@ -1,7 +1,7 @@
 package net.cheney.rev.channel;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
@@ -12,6 +12,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import javax.annotation.Nonnull;
+
+import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.Reactor;
 import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
@@ -23,10 +26,17 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 
 	private final ServerSocketChannel ssc;
 
-	public AsyncServerChannel(Reactor reactor, InetSocketAddress addr) throws IOException {
+	private final ServerProtocolFactory factory;
+
+	public AsyncServerChannel(Reactor reactor, SocketAddress addr, ServerProtocolFactory factory) throws IOException {
 		super(reactor);
+		this.factory = factory;
 		this.ssc = configureServerSocketChannel(createServerSocketChannel());
 		ssc.socket().bind(addr);
+	}
+	
+	protected ServerProtocolFactory factory() {
+		return factory;
 	}
 	
 	private static ServerSocketChannel configureServerSocketChannel(ServerSocketChannel sc) throws IOException {
@@ -91,6 +101,11 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 					}
 					
 					@Override
+					public void completed() {
+						factory().doAccept(channel);
+					}
+					
+					@Override
 					public int intrestOps() {
 						return SelectionKey.OP_READ;
 					}
@@ -99,6 +114,11 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 		} catch (IOException e) {
 			// oh poo
 		}
+	}
+	
+	@Override
+	public void send(@Nonnull AsyncChannel.IORequest msg) {
+		deliver(msg);
 	}
 	
 }
