@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import net.cheney.rev.reactor.Reactor;
 import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
-public abstract class AsyncChannel<T extends SelectableChannel> {
+public abstract class AsyncChannel {
 	
 	protected final Reactor reactor;
 
@@ -17,7 +17,9 @@ public abstract class AsyncChannel<T extends SelectableChannel> {
 	
 	public static abstract class IORequest {
 
-		public abstract void accept(AsyncChannel<?> channel);
+		public abstract void accept(AsyncSocketChannel channel);
+		
+		public abstract void accept(AsyncServerChannel channel);
 
 		public abstract void accept(Reactor reactor);
 
@@ -27,7 +29,7 @@ public abstract class AsyncChannel<T extends SelectableChannel> {
 		deliver(msg);
 	}
 	
-	abstract T channel();
+	abstract SelectableChannel channel();
 	
 	abstract void deliver(AsyncChannel.IORequest msg);
 
@@ -45,6 +47,7 @@ public abstract class AsyncChannel<T extends SelectableChannel> {
 			public int ops() {
 				return ops;
 			}
+
 		});
 	}
 	
@@ -67,7 +70,7 @@ public abstract class AsyncChannel<T extends SelectableChannel> {
 		reactor.send(new Reactor.ChannelRegistrationRequest() {
 			
 			@Override
-			public AsyncChannel<?> sender() {
+			public AsyncChannel sender() {
 				return AsyncChannel.this;
 			}
 			

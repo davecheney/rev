@@ -12,13 +12,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import javax.annotation.Nonnull;
-
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.Reactor;
 import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
-public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implements Runnable {
+public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	
 	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
 
@@ -91,7 +89,7 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 				reactor.send(new Reactor.ChannelRegistrationRequest() {
 					
 					@Override
-					public AsyncChannel<?> sender() {
+					public AsyncChannel sender() {
 						return channel;
 					}
 					
@@ -115,10 +113,4 @@ public class AsyncServerChannel extends AsyncChannel<ServerSocketChannel> implem
 			// oh poo
 		}
 	}
-	
-	@Override
-	public void send(@Nonnull AsyncChannel.IORequest msg) {
-		deliver(msg);
-	}
-	
 }
