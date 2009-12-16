@@ -2,7 +2,6 @@ package net.cheney.rev.channel;
 
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -14,7 +13,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.Reactor;
-import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
 public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	
@@ -94,23 +92,23 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 					}
 					
 					@Override
-					public SelectableChannel channel() {
-						return channel.channel();
-					}
-					
-					@Override
 					public void completed() {
 						factory().doAccept(channel);
 					}
 					
 					@Override
-					public int intrestOps() {
+					public int interestOps() {
 						return SelectionKey.OP_READ;
 					}
 				});
+				enableAcceptInterest();
 			}
 		} catch (IOException e) {
 			// oh poo
 		}
+	}
+
+	private void enableAcceptInterest() {
+		enableInterest(SelectionKey.OP_ACCEPT);
 	}
 }

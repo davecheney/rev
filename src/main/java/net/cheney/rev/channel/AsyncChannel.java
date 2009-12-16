@@ -5,7 +5,6 @@ import java.nio.channels.SelectableChannel;
 import javax.annotation.Nonnull;
 
 import net.cheney.rev.reactor.Reactor;
-import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
 public abstract class AsyncChannel {
 	
@@ -21,22 +20,36 @@ public abstract class AsyncChannel {
 		
 		public abstract void accept(AsyncServerChannel channel);
 
-		public abstract void accept(Reactor reactor);
+	}
+	
+	public abstract static class ReadyOpsNotification extends AsyncChannel.IORequest {
+
+		@Override
+		public void accept(AsyncServerChannel channel) {
+			channel.receive(this);
+		}
+
+		@Override
+		public void accept(AsyncSocketChannel channel) {
+			channel.receive(this);
+		}
+
+		public abstract int readyOps();
 
 	}
 	
-	public void send(@Nonnull AsyncChannel.IORequest msg) {
+	public void send(@Nonnull ReadyOpsNotification msg) {
 		deliver(msg);
 	}
 	
-	abstract SelectableChannel channel();
+	public abstract SelectableChannel channel();
 	
 	abstract void deliver(AsyncChannel.IORequest msg);
 
-	public abstract void receive(ReadyOpsNotification msg);
+	abstract void receive(ReadyOpsNotification msg);
 	
 	void enableInterest(final int ops) {
-		reactor.send(reactor.new EnableInterestRequest() {
+		reactor.send(new Reactor.EnableInterestRequest() {
 			
 			@Override
 			public SelectableChannel channel() {
@@ -52,7 +65,7 @@ public abstract class AsyncChannel {
 	}
 	
 	void disableInterest(final int ops) {
-		reactor.send(reactor.new DisableInterestRequest() {
+		reactor.send(new Reactor.DisableInterestRequest() {
 			
 			@Override
 			public SelectableChannel channel() {
@@ -75,8 +88,8 @@ public abstract class AsyncChannel {
 			}
 			
 			@Override
-			public SelectableChannel channel() {
-				return sender().channel();
+			public int interestOps() {
+				return 0;
 			}
 		});
 	}

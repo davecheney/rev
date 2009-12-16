@@ -14,71 +14,20 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import net.cheney.rev.channel.AsyncChannel;
 import net.cheney.rev.channel.AsyncServerChannel;
-import net.cheney.rev.channel.AsyncSocketChannel;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 
 public class Reactor implements Runnable {
 
-	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
+	private final Deque<Reactor.IORequest> mailbox = new LinkedBlockingDeque<Reactor.IORequest>();
 
-	private static final ExecutorService EXECUTOR = Executors
-			.newSingleThreadExecutor();
+	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 
 	private Selector selector;
 
-	public abstract static class IORequest extends AsyncChannel.IORequest {
+	public abstract static class IORequest {
 
-		@Override
-		public void accept(AsyncServerChannel channel) {
-			throw new IllegalStateException();
-		}
-
-		@Override
-		public void accept(AsyncSocketChannel channel) {
-			throw new IllegalStateException();
-		}
-
-	}
-
-	public static class ReadyOpsNotification extends AsyncChannel.IORequest {
-
-		private final int readyOps;
-
-		public ReadyOpsNotification(int readyOps) {
-			this.readyOps = readyOps;
-		}
-
-		@Override
-		public void accept(AsyncServerChannel channel) {
-			channel.receive(this);
-		}
-
-		@Override
-		public void accept(AsyncSocketChannel channel) {
-			channel.receive(this);
-		}
-
-		@Override
-		public void accept(Reactor reactor) {
-			throw new IllegalStateException();
-		}
-
-		public int readyOps() {
-			return readyOps;
-		}
-
-	}
-
-	public abstract static class ChannelRegistrationRequest extends
-			Reactor.IORequest {
-
-		@Override
-		public void accept(Reactor reactor) {
-			reactor.receive(this);
-		}
-
-		public abstract SelectableChannel channel();
-
+		public abstract void accept(Reactor reactor);
+		
 		public void completed() {
 			// yay
 		}
@@ -87,11 +36,23 @@ public class Reactor implements Runnable {
 			// fuk
 		}
 
-		public int intrestOps() {
-			return 0;
+	}
+
+	public abstract static class ChannelRegistrationRequest extends Reactor.IORequest {
+
+		@Override
+		public void accept(Reactor reactor) {
+			reactor.receive(this);
+		}
+
+		public SelectableChannel channel() {
+			return sender().channel();
 		}
 
 		public abstract AsyncChannel sender();
+		
+		public abstract int interestOps();
+
 	}
 
 	abstract static class UpdateInterestRequest extends Reactor.IORequest {
@@ -102,7 +63,7 @@ public class Reactor implements Runnable {
 
 	}
 
-	public abstract class EnableInterestRequest extends UpdateInterestRequest {
+	public static abstract class EnableInterestRequest extends UpdateInterestRequest {
 
 		@Override
 		public void accept(Reactor reactor) {
@@ -111,7 +72,7 @@ public class Reactor implements Runnable {
 
 	}
 
-	public abstract class DisableInterestRequest extends UpdateInterestRequest {
+	public static abstract class DisableInterestRequest extends UpdateInterestRequest {
 
 		@Override
 		public void accept(Reactor reactor) {
@@ -131,7 +92,7 @@ public class Reactor implements Runnable {
 
 	void receive(ChannelRegistrationRequest msg) {
 		try {
-			msg.channel().register(selector, msg.intrestOps(), msg.sender());
+			msg.channel().register(selector, msg.interestOps(), msg.sender());
 			msg.completed();
 		} catch (IOException e) {
 			msg.failed(e);
@@ -165,8 +126,7 @@ public class Reactor implements Runnable {
 	@Override
 	public void run() {
 		try {
-			for (AsyncChannel.IORequest msg = mailbox.pollFirst(); msg != null; msg = mailbox
-					.pollFirst()) {
+			for (Reactor.IORequest msg = mailbox.pollFirst(); msg != null; msg = mailbox.pollFirst()) {
 				msg.accept(this);
 			}
 			doSelect();
@@ -183,12 +143,15 @@ public class Reactor implements Runnable {
 	}
 
 	private void handleSelectionKey(SelectionKey key) {
-		int ops = key.readyOps();
+		final int ops = key.readyOps();
 		disableInterest(key, ops);
-		// Should the key, not the value of readyOps be send in the notification
-		// in that way, the most current value of ReadyOps may be delivered to
-		// the channel
-		channelFromKey(key).send(new ReadyOpsNotification(ops));
+		channelFromKey(key).send(new AsyncChannel.ReadyOpsNotification() {
+			
+			@Override
+			public int readyOps() {
+				return ops;
+			}
+		});
 	}
 
 	private static AsyncChannel channelFromKey(SelectionKey key) {
@@ -221,10 +184,8 @@ public class Reactor implements Runnable {
 		wakeup();
 	}
 
-	public void listen(SocketAddress addr, ServerProtocolFactory factory)
-			throws IOException {
-		final AsyncServerChannel channel = new AsyncServerChannel(this, addr,
-				factory);
+	public void listen(SocketAddress addr, ServerProtocolFactory factory) throws IOException {
+		final AsyncServerChannel channel = new AsyncServerChannel(this, addr, factory);
 		send(new ChannelRegistrationRequest() {
 
 			@Override
@@ -233,12 +194,7 @@ public class Reactor implements Runnable {
 			}
 
 			@Override
-			public SelectableChannel channel() {
-				return channel.channel();
-			}
-
-			@Override
-			public int intrestOps() {
+			public int interestOps() {
 				return SelectionKey.OP_ACCEPT;
 			}
 		});

@@ -17,7 +17,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import javax.annotation.Nonnull;
 
 import net.cheney.rev.reactor.Reactor;
-import net.cheney.rev.reactor.Reactor.ReadyOpsNotification;
 
 public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closeable {
 	
@@ -50,7 +49,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 	}
 
 	@Override
-	SocketChannel channel() {
+	public SocketChannel channel() {
 		return sc;
 	}
 	
@@ -73,7 +72,19 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 
 	@Override
 	public void receive(ReadyOpsNotification msg) {
-		System.out.println(msg);
+		switch(msg.readyOps()) {
+		case SelectionKey.OP_READ:
+			doRead(); return;
+			
+		case SelectionKey.OP_WRITE:
+			doWrite(); return;
+			
+		case SelectionKey.OP_READ | SelectionKey.OP_WRITE:
+			doRead(); doWrite() ; return;
+			
+		default:
+			throw new IllegalArgumentException();
+		}
 	}
 	
 	@Override
@@ -87,15 +98,12 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		
 		public abstract void completed();
 		
-		public abstract void failed(Throwable t);
-		
-		@Override
-		public void accept(AsyncServerChannel channel) {
-			throw new IllegalArgumentException();
+		public void failed(Throwable t) {
+			t.printStackTrace();
 		}
 		
 		@Override
-		public final void accept(Reactor reactor) {
+		public void accept(AsyncServerChannel channel) {
 			throw new IllegalArgumentException();
 		}
 		
@@ -188,5 +196,5 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		readRequests.addLast(readRequest);
 		enableInterest(SelectionKey.OP_READ);
 	}
-		
+
 }
