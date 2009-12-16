@@ -87,7 +87,7 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 				reactor.send(new Reactor.ChannelRegistrationRequest() {
 					
 					@Override
-					public AsyncChannel sender() {
+					public AsyncSocketChannel sender() {
 						return channel;
 					}
 					

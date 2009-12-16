@@ -33,7 +33,7 @@ public class Reactor implements Runnable {
 		}
 
 		public void failed(Throwable t) {
-			// fuk
+			t.printStackTrace();
 		}
 
 	}
@@ -137,9 +137,11 @@ public class Reactor implements Runnable {
 	}
 
 	private void doSelect() throws IOException {
-		for (SelectionKey key : selectNow()) {
+		Set<SelectionKey> keys = selectNow();
+		for (SelectionKey key : keys) {
 			handleSelectionKey(key);
 		}
+		keys.clear();
 	}
 
 	private void handleSelectionKey(SelectionKey key) {
@@ -159,7 +161,8 @@ public class Reactor implements Runnable {
 	}
 
 	private Set<SelectionKey> selectNow() throws IOException {
-		return selector.select() > 0 ? selector.selectedKeys() : emptySet();
+		selector.select();
+		return selector.selectedKeys();
 	}
 
 	private Set<SelectionKey> emptySet() {
@@ -175,11 +178,14 @@ public class Reactor implements Runnable {
 	}
 
 	public void send(UpdateInterestRequest msg) {
-		mailbox.addLast(msg);
-		wakeup();
+		deliver(msg);
 	}
 
 	public void send(ChannelRegistrationRequest msg) {
+		deliver(msg);
+	}
+	
+	void deliver(Reactor.IORequest msg) {
 		mailbox.addLast(msg);
 		wakeup();
 	}
