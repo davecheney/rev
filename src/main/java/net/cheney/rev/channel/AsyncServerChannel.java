@@ -93,7 +93,8 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 					
 					@Override
 					public void completed() {
-						factory().doAccept(channel);
+						// warning, calls protocol factory, which calls protocol in the context of the reactor, not the AsyncServerChannel or AsyncSocketChannel
+						factory().onAccept(channel);
 					}
 					
 					@Override
@@ -101,8 +102,8 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 						return SelectionKey.OP_READ;
 					}
 				});
-				enableAcceptInterest();
 			}
+			enableAcceptInterest();
 		} catch (IOException e) {
 			// oh poo
 		}
