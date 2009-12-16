@@ -141,6 +141,7 @@ public class Reactor implements Runnable {
 		for (SelectionKey key : keys) {
 			handleSelectionKey(key);
 		}
+		// indicate that all keys have been processed
 		keys.clear();
 	}
 
