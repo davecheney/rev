@@ -5,12 +5,13 @@ import java.net.SocketAddress;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cheney.rev.channel.AsyncChannel;
 import net.cheney.rev.channel.AsyncServerChannel;
@@ -20,7 +21,18 @@ public class Reactor implements Runnable {
 
 	private final Deque<Reactor.IORequest> mailbox = new LinkedBlockingDeque<Reactor.IORequest>();
 
-	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(new ThreadFactory() {
+		
+		AtomicInteger count = new AtomicInteger();
+		
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r);
+			t.setName(String.format("Reactor-%d", count.getAndIncrement()));
+			t.setDaemon(false);
+			return t;
+		}
+	});
 
 	private Selector selector;
 
@@ -164,10 +176,6 @@ public class Reactor implements Runnable {
 	private Set<SelectionKey> selectNow() throws IOException {
 		selector.select();
 		return selector.selectedKeys();
-	}
-
-	private Set<SelectionKey> emptySet() {
-		return Collections.emptySet();
 	}
 
 	private void schedule() {

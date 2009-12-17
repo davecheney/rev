@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
@@ -25,7 +27,18 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 	private Deque<ReadRequest> readRequests = new LinkedList<ReadRequest>(); 
 	private Deque<WriteRequest> writeRequests = new LinkedList<WriteRequest>();
 
-	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4); 
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4, new ThreadFactory() {
+		
+		AtomicInteger count = new AtomicInteger();
+		
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r);
+			t.setName(String.format("AsyncSocketChannel-%d", count.getAndIncrement()));
+			t.setDaemon(true);
+			return t;
+		}
+	});  
 	
 	private final SocketChannel sc;
 

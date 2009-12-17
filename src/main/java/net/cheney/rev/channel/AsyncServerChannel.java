@@ -10,6 +10,8 @@ import java.util.Deque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.reactor.Reactor;
@@ -18,7 +20,18 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	
 	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
 
-	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4); 
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4, new ThreadFactory() {
+		
+		AtomicInteger count = new AtomicInteger();
+		
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r);
+			t.setName(String.format("AsyncServerChannel-%d", count.getAndIncrement()));
+			t.setDaemon(true);
+			return t;
+		}
+	}); 
 
 	private final ServerSocketChannel ssc;
 
