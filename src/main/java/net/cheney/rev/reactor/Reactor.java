@@ -5,7 +5,6 @@ import java.net.SocketAddress;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -164,10 +163,6 @@ public class Reactor implements Runnable {
 	private Set<SelectionKey> selectNow() throws IOException {
 		selector.select();
 		return selector.selectedKeys();
-	}
-
-	private Set<SelectionKey> emptySet() {
-		return Collections.emptySet();
 	}
 
 	private void schedule() {
