@@ -6,32 +6,22 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.Deque;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nonnull;
 
 import net.cheney.rev.protocol.ServerProtocolFactory;
+import net.cheney.rev.reactor.ChannelRegistrationRequest;
 import net.cheney.rev.reactor.Reactor;
 
 public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	
-	private final Deque<AsyncChannel.IORequest> mailbox = new LinkedBlockingDeque<AsyncChannel.IORequest>();
+	private final Queue<AsyncIORequest> mailbox = new ConcurrentLinkedQueue<AsyncIORequest>();
 
-	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4, new ThreadFactory() {
-		
-		AtomicInteger count = new AtomicInteger();
-		
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread t = new Thread(r);
-			t.setName(String.format("AsyncServerChannel-%d", count.getAndIncrement()));
-			t.setDaemon(true);
-			return t;
-		}
-	}); 
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4, new AsyncServerChannelThreadFactory()); 
 
 	private final ServerSocketChannel ssc;
 
@@ -46,6 +36,11 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	
 	protected ServerProtocolFactory factory() {
 		return factory;
+	}
+	
+	@Override
+	protected final ExecutorService executor() {
+		return EXECUTOR;
 	}
 	
 	private static ServerSocketChannel configureServerSocketChannel(ServerSocketChannel sc) throws IOException {
@@ -64,24 +59,20 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	}
 
 	@Override
-	void deliver(AsyncChannel.IORequest msg) {
-		mailbox.addLast(msg);
+	void deliver(AsyncIORequest msg) {
+		mailbox.add(msg);
 		schedule();
 	}
 
-	private void schedule() {
-		EXECUTOR.execute(this);
-	}
-	
 	@Override
 	public void run() {
-		for(AsyncChannel.IORequest msg = mailbox.poll() ; msg != null ; msg = mailbox.poll()) {
+		for(AsyncIORequest msg = mailbox.poll() ; msg != null ; msg = mailbox.poll()) {
 			msg.accept(this);
 		}
 	}
 
 	@Override
-	public void receive(ReadyOpsNotification msg) {
+	public void receive(@Nonnull ReadyOpsNotification msg) {
 		switch(msg.readyOps()) {
 		case SelectionKey.OP_ACCEPT:
 			doAccept();
@@ -97,7 +88,7 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 			SocketChannel sc = ssc.accept();
 			if(sc != null) {
 				final AsyncSocketChannel channel = new AsyncSocketChannel(this.reactor, sc);
-				reactor.send(new Reactor.ChannelRegistrationRequest() {
+				reactor.send(new ChannelRegistrationRequest() {
 					
 					@Override
 					public AsyncSocketChannel sender() {
