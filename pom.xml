@@ -29,9 +29,9 @@
 	</build>
 
 	<properties>
-		<repoUrl>http://repo.cheney.net/maven2</repoUrl>
-		<releaseRepoUrl>${repoUrl}/public</releaseRepoUrl>
-		<snapshotRepoUrl>${repoUrl}/public-snapshot</snapshotRepoUrl>
+		<repoUrl>http://nexus.cheney.net/content/repositories</repoUrl>
+		<releaseRepoUrl>${repoUrl}/releases</releaseRepoUrl>
+		<snapshotRepoUrl>${repoUrl}/snapshots</snapshotRepoUrl>
 	</properties>
 	<dependencies>
 		<dependency>
