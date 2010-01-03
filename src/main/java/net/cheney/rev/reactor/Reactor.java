@@ -19,7 +19,7 @@ import net.cheney.rev.channel.ReadyOpsNotification;
 import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.util.Worker;
 
-public class Reactor extends Worker {
+public final class Reactor extends Worker {
 
 	private final Queue<IOOperation> mailbox = new ConcurrentLinkedQueue<IOOperation>();
 
