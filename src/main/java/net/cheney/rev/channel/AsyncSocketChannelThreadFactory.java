@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 
 final class AsyncSocketChannelThreadFactory implements
 		ThreadFactory {
-	AtomicInteger count = new AtomicInteger();
+	private final AtomicInteger count = new AtomicInteger();
 
 	@Override
 	public Thread newThread(@Nonnull Runnable r) {

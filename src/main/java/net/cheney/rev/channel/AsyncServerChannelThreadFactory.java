@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 final class AsyncServerChannelThreadFactory implements
 		ThreadFactory {
-	AtomicInteger count = new AtomicInteger();
+	private final AtomicInteger count = new AtomicInteger();
 
 	@Override
 	public Thread newThread(Runnable r) {
