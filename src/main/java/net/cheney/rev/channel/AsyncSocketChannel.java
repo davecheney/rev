@@ -16,9 +16,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Nonnull;
 
+import org.apache.log4j.Logger;
+
 import net.cheney.rev.reactor.Reactor;
 
 public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closeable {
+	
+	private static final Logger LOG = Logger.getLogger(AsyncSocketChannel.class);
 
 	private final Queue<AsyncIORequest> mailbox = new ConcurrentLinkedQueue<AsyncIORequest>();
 
@@ -73,7 +77,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 				guard.unlock();
 			}
 		} else {
-			System.out.println("Spurious wakeup");
+			LOG.debug("Spurious wakeup");
 		}
 
 	}
