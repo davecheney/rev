@@ -28,11 +28,6 @@
 		</pluginManagement>
 	</build>
 
-	<properties>
-		<repoUrl>http://nexus.cheney.net/content/repositories</repoUrl>
-		<releaseRepoUrl>${repoUrl}/releases</releaseRepoUrl>
-		<snapshotRepoUrl>${repoUrl}/snapshots</snapshotRepoUrl>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -50,12 +45,12 @@
 
 	<distributionManagement>
 		<repository>
-			<id>public</id>
-			<url>dav:${releaseRepoUrl}</url>
+			<id>nexus-releases</id>
+			<url>http://nexus.cheney.net/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>public-snapshot</id>
-			<url>dav:${snapshotRepoUrl}</url>
+			<id>nexus-snapshots</id>
+			<url>http://nexus.cheney.net/content/repositories/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
