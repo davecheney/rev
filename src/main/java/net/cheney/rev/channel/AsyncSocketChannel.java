@@ -201,7 +201,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		try {
 			channel().socket().shutdownOutput();
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOG.error(String.format("Unable to shutdown output on channel [%s]", this), e);
 		}
 	}
 
