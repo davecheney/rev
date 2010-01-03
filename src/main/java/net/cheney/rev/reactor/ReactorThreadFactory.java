@@ -4,7 +4,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 final class ReactorThreadFactory implements ThreadFactory {
-	AtomicInteger count = new AtomicInteger();
+	private final AtomicInteger count = new AtomicInteger();
 
 	@Override
 	public Thread newThread(Runnable r) {
