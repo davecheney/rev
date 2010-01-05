@@ -23,7 +23,7 @@ public abstract class AsyncChannel extends Worker {
 	
 	public abstract SelectableChannel channel();
 	
-	abstract void deliver(AsyncIORequest msg);
+	abstract void deliver(IOOperation msg);
 
 	abstract void receive(ReadyOpsNotification msg);
 	

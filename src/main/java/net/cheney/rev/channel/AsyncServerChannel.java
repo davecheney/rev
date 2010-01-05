@@ -19,7 +19,7 @@ import net.cheney.rev.reactor.Reactor;
 
 public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	
-	private final Queue<AsyncIORequest> mailbox = new ConcurrentLinkedQueue<AsyncIORequest>();
+	private final Queue<IOOperation> mailbox = new ConcurrentLinkedQueue<IOOperation>();
 
 	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4, new AsyncServerChannelThreadFactory()); 
 
@@ -59,14 +59,14 @@ public class AsyncServerChannel extends AsyncChannel implements Runnable {
 	}
 
 	@Override
-	void deliver(AsyncIORequest msg) {
+	void deliver(IOOperation msg) {
 		mailbox.add(msg);
 		schedule();
 	}
 
 	@Override
 	public void run() {
-		for(AsyncIORequest msg = mailbox.poll() ; msg != null ; msg = mailbox.poll()) {
+		for(IOOperation msg = mailbox.poll() ; msg != null ; msg = mailbox.poll()) {
 			msg.accept(this);
 		}
 	}

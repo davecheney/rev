@@ -5,7 +5,7 @@ import java.nio.channels.SocketChannel;
 
 import javax.annotation.Nonnull;
 
-public abstract class IORequest<T extends SocketChannel> extends AsyncIORequest {
+public abstract class IORequest<T extends SocketChannel> extends IOOperation {
 
 	public abstract void accept(@Nonnull AsyncSocketChannel channel);
 

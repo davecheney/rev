@@ -24,7 +24,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 	
 	private static final Logger LOG = Logger.getLogger(AsyncSocketChannel.class);
 
-	private final Queue<AsyncIORequest> mailbox = new ConcurrentLinkedQueue<AsyncIORequest>();
+	private final Queue<IOOperation> mailbox = new ConcurrentLinkedQueue<IOOperation>();
 
 	private Queue<ReadRequest> readRequests = new LinkedList<ReadRequest>();
 	private Queue<WriteRequest> writeRequests = new LinkedList<WriteRequest>();
@@ -61,7 +61,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 	}
 
 	@Override
-	void deliver(@Nonnull AsyncIORequest msg) {
+	void deliver(@Nonnull IOOperation msg) {
 		mailbox.add(msg);
 		schedule();
 	}
@@ -70,7 +70,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 	public void run() {
 		if (guard.tryLock()) {
 			try {
-				for (AsyncIORequest msg = mailbox.poll(); msg != null; msg = mailbox.poll()) {
+				for (IOOperation msg = mailbox.poll(); msg != null; msg = mailbox.poll()) {
 					msg.accept(this);
 				}
 			} finally {

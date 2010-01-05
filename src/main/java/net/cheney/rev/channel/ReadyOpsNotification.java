@@ -1,6 +1,6 @@
 package net.cheney.rev.channel;
 
-public abstract class ReadyOpsNotification extends AsyncIORequest {
+public abstract class ReadyOpsNotification extends IOOperation {
 
 	@Override
 	public void accept(AsyncServerChannel channel) {
