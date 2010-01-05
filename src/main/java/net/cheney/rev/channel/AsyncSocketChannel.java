@@ -119,7 +119,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		public void accept(@Nonnull AsyncSocketChannel channel) {
 			channel.receive(this);
 		}
-
+		
 	}
 		
 	public static abstract class WriteRequest extends net.cheney.rev.channel.IORequest<SocketChannel> {
@@ -128,7 +128,7 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		public void accept(@Nonnull AsyncSocketChannel channel) {
 			channel.receive(this);
 		}
-
+		
 	}
 
 	void doRead() {
@@ -136,15 +136,20 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		try {
 			for (Iterator<ReadRequest> i = readRequests.iterator(); i.hasNext();) {
 				request = i.next();
-				if (request.accept(channel())) {
-					i.remove();
-					request.completed();
+				if(channel().isOpen()) {
+					if (request.accept(channel())) {
+						i.remove();
+						request.completed();
+					} else {
+						enableReadInterest();
+						return;
+					}
 				} else {
-					enableReadInterest();
-					return;
+					// TODO hack ?
+					closeQuietly();
 				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			request.failed(e);
 		}
 	}
@@ -158,15 +163,20 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		try {
 			for (Iterator<WriteRequest> i = writeRequests.iterator(); i.hasNext();) {
 				request = i.next();
-				if (request.accept(channel())) {
-					i.remove();
-					request.completed();
+				if(channel().isOpen()) {
+					if (request.accept(channel())) {
+						i.remove();
+						request.completed();
+					} else {
+						enableWriteInterest();
+						return;
+					}
 				} else {
-					enableWriteInterest();
-					return;
+					// TODO should call protocol.onDisconnect() ?
+					closeQuietly();
 				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			request.failed(e);
 		}
 	}
@@ -203,6 +213,12 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		} catch (IOException e) {
 			LOG.error(String.format("Unable to shutdown output on channel [%s]", this), e);
 		}
+	}
+
+	public void closeQuietly() {
+		try {
+			close();
+		} catch (IOException ignored) { }
 	}
 
 }
