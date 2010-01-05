@@ -6,6 +6,12 @@
 	<name>rev</name>
 	<version>1.0-SNAPSHOT</version>
 
+	<scm>
+		<connection>scm:git:git://github.com/davecheney/rev.git</connection>
+		<developerConnection>scm:git:git://github.com/davecheney/rev.git</developerConnection>
+		<url>http://github.com/davecheney/rev</url>
+	</scm>
+
 	<build>
 		<pluginManagement>
 			<plugins>
