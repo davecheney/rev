@@ -3,7 +3,7 @@
 	<groupId>net.cheney.rev</groupId>
 	<artifactId>rev</artifactId>
 	<name>rev</name>
-	<version>0.1</version>
+	<version>0.2-SNAPSHOT</version>
 
 	<scm>
 		<connection>scm:git:git://github.com/davecheney/rev.git</connection>
