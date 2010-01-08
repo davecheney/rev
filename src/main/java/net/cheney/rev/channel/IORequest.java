@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 
 public abstract class IORequest<T extends SocketChannel> extends IOOperation {
 
-	public abstract void accept(@Nonnull AsyncSocketChannel channel);
-
 	@Override
 	public void accept(@Nonnull AsyncServerChannel channel) {
 		throw new IllegalArgumentException();

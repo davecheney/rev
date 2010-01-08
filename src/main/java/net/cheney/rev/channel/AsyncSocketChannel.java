@@ -136,17 +136,12 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		try {
 			for (Iterator<ReadRequest> i = readRequests.iterator(); i.hasNext();) {
 				request = i.next();
-				if(channel().isOpen()) {
-					if (request.accept(channel())) {
-						i.remove();
-						request.completed();
-					} else {
-						enableReadInterest();
-						return;
-					}
+				if (request.accept(channel())) {
+					i.remove();
+					request.completed();
 				} else {
-					// TODO hack ?
-					closeQuietly();
+					enableReadInterest();
+					return;
 				}
 			}
 		} catch (Exception e) {
@@ -163,17 +158,12 @@ public class AsyncSocketChannel extends AsyncChannel implements Runnable, Closea
 		try {
 			for (Iterator<WriteRequest> i = writeRequests.iterator(); i.hasNext();) {
 				request = i.next();
-				if(channel().isOpen()) {
-					if (request.accept(channel())) {
-						i.remove();
-						request.completed();
-					} else {
-						enableWriteInterest();
-						return;
-					}
+				if (request.accept(channel())) {
+					i.remove();
+					request.completed();
 				} else {
-					// TODO should call protocol.onDisconnect() ?
-					closeQuietly();
+					enableWriteInterest();
+					return;
 				}
 			}
 		} catch (Exception e) {

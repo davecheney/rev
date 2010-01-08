@@ -4,8 +4,6 @@ import java.nio.channels.SelectableChannel;
 
 import javax.annotation.Nonnull;
 
-import net.cheney.rev.reactor.DisableInterestRequest;
-import net.cheney.rev.reactor.EnableInterestRequest;
 import net.cheney.rev.reactor.Reactor;
 import net.cheney.rev.util.Worker;
 
@@ -28,7 +26,8 @@ public abstract class AsyncChannel extends Worker {
 	abstract void receive(ReadyOpsNotification msg);
 	
 	void enableInterest(final int ops) {
-		reactor.send(new EnableInterestRequest() {
+		
+		final class EnableInterestRequest extends net.cheney.rev.reactor.EnableInterestRequest {
 			
 			@Override
 			public AsyncChannel sender() {
@@ -40,12 +39,13 @@ public abstract class AsyncChannel extends Worker {
 				return ops;
 			}
 
-		});
+		}
+		reactor.send(new EnableInterestRequest());
 	}
 	
 	void disableInterest(final int ops) {
-		reactor.send(new DisableInterestRequest() {
-			
+		
+		final class DisableInterestRequest extends net.cheney.rev.reactor.DisableInterestRequest {
 			@Override
 			public AsyncChannel sender() {
 				return AsyncChannel.this;
@@ -55,7 +55,9 @@ public abstract class AsyncChannel extends Worker {
 			public int interestOps() {
 				return ops;
 			}
-		});
+		}
+		
+		reactor.send(new DisableInterestRequest());
 	}
 
 }
