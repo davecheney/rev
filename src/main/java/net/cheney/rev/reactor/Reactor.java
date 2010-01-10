@@ -13,6 +13,8 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.Nonnull;
 
+import org.apache.log4j.Logger;
+
 import net.cheney.rev.channel.AsyncChannel;
 import net.cheney.rev.channel.AsyncServerChannel;
 import net.cheney.rev.channel.ReadyOpsNotification;
@@ -20,6 +22,8 @@ import net.cheney.rev.protocol.ServerProtocolFactory;
 import net.cheney.rev.util.Worker;
 
 public final class Reactor extends Worker {
+	
+	private static final Logger LOG = Logger.getLogger(Reactor.class);
 
 	private final Queue<IOOperation> mailbox = new ConcurrentLinkedQueue<IOOperation>();
 
@@ -51,7 +55,12 @@ public final class Reactor extends Worker {
 	}
 
 	private void enableInterest(@Nonnull SelectableChannel channel, int ops) {
-		enableInterest(channel.keyFor(selector), ops);
+		SelectionKey key = channel.keyFor(selector);
+		if (key != null) {
+			enableInterest(key, ops);
+		} else {
+			LOG.warn(String.format("Channel %s not registered with %s", channel, selector));
+		}
 	}
 
 	private void enableInterest(@Nonnull SelectionKey sk, int ops) {
@@ -63,7 +72,12 @@ public final class Reactor extends Worker {
 	}
 
 	private void disableInterest(@Nonnull SelectableChannel channel, int ops) {
-		disableInterest(channel.keyFor(selector), ops);
+		SelectionKey key = channel.keyFor(selector);
+		if (key != null) {
+			disableInterest(channel.keyFor(selector), ops);
+		} else {
+			LOG.warn(String.format("Channel %s not registered with %s", channel, selector));
+		}
 	}
 
 	private void disableInterest(@Nonnull SelectionKey sk, int ops) {
