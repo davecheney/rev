@@ -2,6 +2,7 @@ package net.cheney.rev.reactor;
 
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -51,7 +52,11 @@ public final class Reactor extends Worker {
 	}
 
 	void receive(@Nonnull EnableInterestRequest msg) {
-		enableInterest(msg.channel(), msg.interestOps());
+		try {
+			enableInterest(msg.channel(), msg.interestOps());
+		} catch(CancelledKeyException e) {
+			msg.failed(e);
+		}
 	}
 
 	private void enableInterest(@Nonnull SelectableChannel channel, int ops) {
